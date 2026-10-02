@@ -51,7 +51,9 @@ document.getElementById('f').addEventListener('submit',async e=>{
     ok.style.display='block';
     form.reset();
   }catch(err){
-    ok.innerHTML='Sorry, we could not send your request. Please email <a href="mailto:'+EMAIL+'">'+EMAIL+'</a> or WhatsApp +233 54 919 1228.';
+    const body='Name: '+d.get('name')+'\nEmail: '+d.get('email')+'\nService: '+d.get('svc')+'\n\n'+d.get('msg');
+    const mail='mailto:'+EMAIL+'?subject='+encodeURIComponent('New project request: '+d.get('svc'))+'&body='+encodeURIComponent(body);
+    ok.innerHTML='We could not send it automatically. <a href="'+mail+'">Tap here to send it by email</a> (your message is filled in) or WhatsApp +233 54 919 1228.';
     ok.style.display='block';
   }finally{btn.disabled=false;btn.textContent=label;}
 });
