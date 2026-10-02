@@ -40,10 +40,10 @@ document.getElementById('f').addEventListener('submit',async e=>{
   btn.disabled=true;btn.textContent='Sending...';
   ok.style.display='none';
   try{
-    const r=await fetch('https://formsubmit.co/ajax/'+EMAIL,{
+    const r=await fetch('https://api.web3forms.com/submit',{
       method:'POST',
       headers:{'Content-Type':'application/json',Accept:'application/json'},
-      body:JSON.stringify({name:d.get('name'),email:d.get('email'),service:d.get('svc'),message:d.get('msg'),_subject:'New project request: '+d.get('svc'),_replyto:d.get('email'),_template:'table',_captcha:'false'})
+      body:JSON.stringify({access_key:'f0849566-a8e7-4e2f-9aaf-aeb598b5e52d',from_name:'COMGAB DIGITAL Website',subject:'New project request: '+d.get('svc'),name:d.get('name'),email:d.get('email'),service:d.get('svc'),message:d.get('msg'),replyto:d.get('email')})
     });
     const j=await r.json();
     if(!r.ok||String(j.success)==='false')throw new Error('fail');
