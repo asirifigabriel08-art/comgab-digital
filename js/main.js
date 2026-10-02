@@ -43,7 +43,7 @@ document.getElementById('f').addEventListener('submit',async e=>{
     const r=await fetch('https://api.web3forms.com/submit',{
       method:'POST',
       headers:{'Content-Type':'application/json',Accept:'application/json'},
-      body:JSON.stringify({access_key:'f0849566-a8e7-4e2f-9aaf-aeb598b5e52d',from_name:'COMGAB DIGITAL Website',subject:'New project request: '+d.get('svc'),name:d.get('name'),email:d.get('email'),service:d.get('svc'),message:d.get('msg'),replyto:d.get('email')})
+      body:JSON.stringify({access_key:'34cad031-3304-4baf-b454-9ac5442eb06f',from_name:'COMGAB DIGITAL Website',subject:'New project request: '+d.get('svc'),name:d.get('name'),email:d.get('email'),service:d.get('svc'),message:d.get('msg'),replyto:d.get('email')})
     });
     const j=await r.json();
     if(!r.ok||String(j.success)==='false')throw new Error('fail');
