@@ -187,6 +187,17 @@ a.pc:hover{transform:translateY(-8px);border-color:rgba(102,227,244,.4);box-shad
 .pc.cta2>.btn{margin-left:auto}
 .pc.cta2 h3{margin:10px 0 4px}
 
+/* Service packages */
+.packages-grid{grid-template-columns:repeat(3,1fr)}
+.package-card{display:flex;flex-direction:column;min-height:410px}
+.package-label{align-self:flex-start;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ac)}
+.package-card h3{margin-top:18px!important}
+.package-card .price{font-size:.95rem;margin-bottom:12px}.package-card .price strong{display:block;color:var(--tx);font-family:'Space Grotesk',sans-serif;font-size:1.55rem;margin-top:4px}
+.package-card ul{list-style:none;display:grid;gap:7px;margin:20px 0;color:var(--mu);font-size:.9rem}.package-card li:before{content:"✓ ";color:var(--ac)}
+.package-card .vw{margin-top:auto}.form-note{color:var(--mu);font-size:.78rem;line-height:1.5}.featured-package{border-color:rgba(102,227,244,.42);box-shadow:0 20px 60px rgba(102,227,244,.08)}
+@media(max-width:900px){.packages-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.packages-grid{grid-template-columns:1fr}}
+
 /* Contact details and footer */
 .ci{list-style:none;display:grid;gap:14px;margin-top:32px}
 .ci a{display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:18px;border:1px solid var(--bd);background:rgba(255,255,255,.04);transition:transform .3s,border-color .3s}
@@ -213,4 +224,26 @@ footer .fbot{padding-right:96px}@media(max-width:560px){footer .fbot{padding-rig
 .wa-float svg{width:28px;height:28px;flex:none}
 @media(max-width:560px){.wa-float span{display:none}.wa-float{width:56px;padding:0;justify-content:center}}
 
+/* Editorial warm-theme refinement */
+:root{--bg:#f3efe5;--bg2:#e8e2d5;--tx:#242722;--mu:#686a64;--ac:#9d7b35;--ac2:#5f6656;--gl:rgba(36,39,34,.035);--bd:rgba(36,39,34,.13)}
+body{font-family:'DM Sans',Inter,system-ui,sans-serif;background:var(--bg);color:var(--tx)}
+h1,h2,h3,.logo,.stats b,.sc b,.orbt,.ci b{font-family:'Cormorant Garamond',Georgia,serif}
+h1,h2{color:#20221f}.gr{background:none;color:#6f602f;-webkit-text-fill-color:initial}
+.glow{background:radial-gradient(560px 380px at 86% 8%,rgba(157,123,53,.10),transparent),linear-gradient(180deg,#f8f5ed,var(--bg))}
+nav.s{background:rgba(248,245,237,.88);border-bottom-color:var(--bd)}.links{color:#62645e}.logo b{color:#8d7034}
+.btn{color:#252722;border-color:rgba(36,39,34,.18);background:rgba(255,255,255,.5)}
+.btn.p{color:#fff;background:#252722;box-shadow:none}.btn.p:hover{box-shadow:0 10px 28px rgba(36,39,34,.18)}
+.tag,.eyebrow{color:#8a702f}.tag{border-color:rgba(157,123,53,.28);background:rgba(157,123,53,.06)}
+.chips span,.gc,.cbox{background:rgba(255,255,255,.58);border-color:rgba(36,39,34,.12)}
+.gc:hover{border-color:rgba(157,123,53,.45);box-shadow:0 22px 55px rgba(45,42,34,.08)}
+.card3{background:rgba(255,255,255,.68);border-color:rgba(36,39,34,.12);box-shadow:0 24px 65px rgba(45,42,34,.16)}
+.bar i,.ph .tl{background:rgba(36,39,34,.14)}.hb,.ph .tl:first-of-type,.wv i{background:#cfc6b4}.wv i:nth-child(odd){background:#a98a4a}
+.orb{background:conic-gradient(from 0deg,#b99c60,#767c67,#d6cfbe,#b99c60);opacity:.65}.orb:after{background:radial-gradient(circle at 30% 30%,#f6f1e7,var(--bg))}
+.thumb{border-color:rgba(36,39,34,.12)}.t1{background:linear-gradient(135deg,#71807a,#cfbea1)}.t2{background:linear-gradient(135deg,#a2a178,#cfba8f)}.t3{background:linear-gradient(135deg,#6c7371,#b8aa92)}
+input,textarea,select{color:var(--tx);background:rgba(255,255,255,.72);border-color:rgba(36,39,34,.18)}select option{background:#f8f5ed;color:#242722}input::placeholder,textarea::placeholder{color:#777b72}
+footer{background:#252722;color:#f6f3eb}footer a{color:#c9c5ba!important}footer h4{color:#fff}footer .fbot{border-top-color:rgba(255,255,255,.12)}
+.package-card,.featured-package{border-color:rgba(36,39,34,.12)}.featured-package{box-shadow:0 20px 55px rgba(157,123,53,.1)}.package-label,.package-card .vw,.vw{color:#806833}
+.ham i{background:var(--tx)}.links.o{background:rgba(248,245,237,.98)!important}
+@media(max-width:900px){nav.s{backdrop-filter:blur(16px)}}
+@media(prefers-reduced-motion:reduce){.orb{animation:none}}
 .logo{display:inline-flex;align-items:center;gap:10px}.logo .lm{width:36px;height:36px;flex:none;transition:transform .4s}.logo:hover .lm{transform:rotate(-8deg) scale(1.06)}

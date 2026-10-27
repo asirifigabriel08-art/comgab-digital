@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://asirifigabriel08-art.github.io/comgab-digital/sitemap.xml

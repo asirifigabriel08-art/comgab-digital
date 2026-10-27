@@ -29,31 +29,14 @@ if(sc&&matchMedia('(hover:hover) and (prefers-reduced-motion: no-preference)').m
   });
   sc.addEventListener('mouseleave',()=>sc.style.transform='');
 }
-document.getElementById('f').addEventListener('submit',async e=>{
+document.getElementById('f').addEventListener('submit',e=>{
   e.preventDefault();
   const form=e.currentTarget;
   if(!form.reportValidity())return;
   const d=new FormData(form);
   const ok=document.getElementById('ok');
-  const btn=form.querySelector('button[type=submit]');
-  const label=btn.textContent;
-  btn.disabled=true;btn.textContent='Sending...';
-  ok.style.display='none';
-  try{
-    const r=await fetch('https://api.web3forms.com/submit',{
-      method:'POST',
-      headers:{'Content-Type':'application/json',Accept:'application/json'},
-      body:JSON.stringify({access_key:'34cad031-3304-4baf-b454-9ac5442eb06f',from_name:'COMGAB DIGITAL Website',subject:'New project request: '+d.get('svc'),name:d.get('name'),email:d.get('email'),service:d.get('svc'),message:d.get('msg'),replyto:d.get('email')})
-    });
-    const j=await r.json();
-    if(!r.ok||String(j.success)==='false')throw new Error('fail');
-    ok.textContent='Thank you! Your project request has been sent. We will get back to you shortly.';
-    ok.style.display='block';
-    form.reset();
-  }catch(err){
-    const body='Name: '+d.get('name')+'\nEmail: '+d.get('email')+'\nService: '+d.get('svc')+'\n\n'+d.get('msg');
-    const mail='mailto:'+EMAIL+'?subject='+encodeURIComponent('New project request: '+d.get('svc'))+'&body='+encodeURIComponent(body);
-    ok.innerHTML='We could not send it automatically. <a href="'+mail+'">Tap here to send it by email</a> (your message is filled in) or WhatsApp +233 54 919 1228.';
-    ok.style.display='block';
-  }finally{btn.disabled=false;btn.textContent=label;}
+  const body='Name: '+d.get('name')+'\nEmail: '+d.get('email')+'\nBusiness: '+(d.get('business')||'Not provided')+'\nWhatsApp: '+(d.get('whatsapp')||'Not provided')+'\nService: '+d.get('svc')+'\nBudget: '+(d.get('budget')||'Not provided')+'\nDeadline: '+(d.get('deadline')||'Not provided')+'\n\n'+d.get('msg');
+  const mail='mailto:'+EMAIL+'?subject='+encodeURIComponent('New project request: '+d.get('svc'))+'&body='+encodeURIComponent(body);
+  ok.innerHTML='Your project details are ready. <a href="'+mail+'">Open your email app to send the enquiry</a>, or continue via WhatsApp.';
+  ok.style.display='block';
 });

@@ -8,7 +8,7 @@ const intents=[
 {id:'greet',re:/\b(hi|hello|hey|good (morning|afternoon|evening)|howdy|yo)\b/i,r:[
  n=>`Hi${n}! 👋 Great to have you here. What are you looking to build?`,
  n=>`Hello${n}! Welcome to COMGAB DIGITAL. Tell me a bit about your idea and I'll point you the right way.`,
- n=>`Hey${n}! Happy you stopped by. Are you thinking of a website, an app, or something with AI?`]},
+ n=>`Hey${n}! Happy you stopped by. Are you looking for a new business website, a redesign, or a landing page?`]},
 {id:'how',re:/how are you|how('s| is) it going|what'?s up/i,r:[
  ()=>`Doing great, thanks for asking! Ready to help. What brings you here today?`,
  ()=>`All good on my side 😊 How can I help with your project?`]},
@@ -24,8 +24,7 @@ const intents=[
  ()=>`Mobile apps are right up our street. What should the app let people do?`,
  ()=>`Nice! Share the main idea of the app and I can tell you how we'd approach it.`]},
 {id:'ai',re:/\b(ai|artificial|video|content|copy|chatbot|automation)\b/i,r:[
- ()=>`Our AI work covers AI-powered video, visuals and written content that tell your story at scale. What would you like to create?`,
- ()=>`AI content is a great way to move faster. Are you thinking promo videos, social visuals, or copywriting?`]},
+ ()=>`Website care includes agreed content updates, routine checks and support. Do you already have a website?`]},
 {id:'ux',re:/\b(ui|ux|design|logo|brand|figma|wireframe)\b/i,r:[
  ()=>`Our UI/UX design focuses on clean, intuitive interfaces built around real users. Is this a new design or a redesign?`,
  ()=>`Design is where we love to start: wireframes, visuals, then a clickable look at the result. What are you designing?`]},
@@ -54,7 +53,7 @@ const intents=[
 {id:'who',re:/\b(who are you|what are you|are you (a )?(bot|robot|human|real))\b/i,r:[
  ()=>`I'm the COMGAB DIGITAL virtual assistant, an automated helper (not a person). I can answer questions about our services and help you get in touch with the team.`]},
 {id:'services',re:/\b(services|what do you (do|offer)|offer|help with)\b/i,r:[
- ()=>`We offer website design & development, mobile apps, AI video & content creation, UI/UX design, SEO, and maintenance & support. Which one interests you most?`]},
+ ()=>`Our main services are business website design, website redesigns, landing pages, responsive website improvements, basic SEO and ongoing website care. Which one interests you most?`]},
 {id:'thanks',re:/\b(thanks|thank you|thx|cheers|appreciate)\b/i,r:[
  ()=>`You're very welcome! 😊 Anything else I can help with?`,
  ()=>`My pleasure! I'm here if you have more questions.`,
@@ -71,8 +70,8 @@ const intents=[
 ];
 
 const fallbacks=[
- ()=>`Thanks for sharing that! Could you tell me a little more? I can help with websites, apps, AI content, design, SEO and support.`,
- ()=>`I want to get this right. Is this about a website, an app, AI content, or something else?`,
+ ()=>`Thanks for sharing that! Could you tell me a little more? I can help with business websites, redesigns, landing pages, SEO and website support.`,
+  ()=>`I want to get this right. Is this about a new website, a redesign, a landing page, or ongoing support?`,
  ()=>`Interesting! I may not have the full answer, but our team will. Want me to open an email to them (just say "email them")?`,
  ()=>`Could you rephrase that for me? Or ask about our services, process or pricing.`,
  ()=>`I'm not sure I caught that, but I'd love to help. What kind of project do you have in mind?`
