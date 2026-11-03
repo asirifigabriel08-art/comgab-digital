@@ -24,7 +24,7 @@ Conversation history is stored only in the visitor's browser local storage (up t
 
 ## Portfolio screenshot fallbacks
 
-The portfolio uses the live-captured previews configured in `index.html`. If an external preview becomes unavailable, its card switches to a clear fallback instead of showing a broken image. Diva Cakes currently serves a security-verification page to the capture service, so its card intentionally shows an honest fallback; do not use that verification page as a project screenshot. To replace the fallback later, save a genuine homepage screenshot as `assets/projects/diva-cakes.jpg` and change its fallback markup in `index.html` to an `<img>` like the other project cards.
+The portfolio uses the authentic project previews configured in `index.html`. If an external preview becomes unavailable, its card switches to a clear fallback instead of showing a broken image. The Diva Cakes screenshot was captured directly from its live homepage in a browser because automated capture services receive a security-verification page.
 
 | Project | Local screenshot path |
 |---|---|
@@ -34,6 +34,6 @@ The portfolio uses the live-captured previews configured in `index.html`. If an 
 | COMGAB DIGITAL | `assets/projects/comgab-digital.jpg` |
 | Crystal Clear Logic | `assets/projects/crystal-clear-logic.jpg` |
 | MO Koncepts Studio | `assets/projects/mo-koncepts-studio.jpg` |
-| Diva Cakes | `assets/projects/diva-cakes.jpg` (not available; capture blocked) |
+| Diva Cakes | `assets/projects/diva-cakes.jpg` |
 | Buttercream Queen | `assets/projects/buttercream-queen.jpg` |
 | Aura Home | `assets/projects/aura-home.jpg` |
