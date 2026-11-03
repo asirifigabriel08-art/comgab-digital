@@ -21,3 +21,19 @@ If you keep the site on GitHub Pages, deploy the Node server separately and set 
 ## Data and limits
 
 Conversation history is stored only in the visitor's browser local storage (up to 25 recent chats). It is not uploaded until a visitor sends a message; each request contains recent turns for context. Avoid entering sensitive personal information. The API limits messages and applies a basic in-memory per-IP request limit; a production deployment with many server instances should add a shared rate limiter at its hosting edge.
+
+## Portfolio screenshot fallbacks
+
+The portfolio uses the live-captured previews configured in `index.html`. If an external preview becomes unavailable, its card switches to a clear fallback instead of showing a broken image. Add a genuine screenshot at the corresponding path and change that card's `<img src>` to use the local file:
+
+| Project | Local screenshot path |
+|---|---|
+| Dominion Luxury Apartment | `assets/projects/dominion-luxury-apartment.jpg` |
+| Bake Birds | `assets/projects/bake-birds.jpg` |
+| Greenline Logistics | `assets/projects/greenline-logistics.jpg` |
+| COMGAB DIGITAL | `assets/projects/comgab-digital.jpg` |
+| Crystal Clear Logic | `assets/projects/crystal-clear-logic.jpg` |
+| MO Koncepts Studio | `assets/projects/mo-koncepts-studio.jpg` |
+| Diva Cakes | `assets/projects/diva-cakes.jpg` |
+| Buttercream Queen | `assets/projects/buttercream-queen.jpg` |
+| Aura Home | `assets/projects/aura-home.jpg` |

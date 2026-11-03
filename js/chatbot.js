@@ -9,8 +9,10 @@ const root=document.createElement('div');
 root.innerHTML=`<button id="cg-btn" type="button" aria-label="Open chat assistant" aria-expanded="false" aria-controls="cg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg></button>
 <section id="cg" role="dialog" aria-label="COMGAB Assistant" aria-modal="false"><header><i aria-hidden="true"></i><div class="cg-brand"><b>COMGAB Assistant</b><small id="cg-status">AI assistant · private chat history</small></div><button type="button" id="cg-new" aria-label="Start a new chat" title="New chat">＋</button><button type="button" id="cg-x" aria-label="Close chat">&times;</button></header>
 <nav class="cg-toolbar" aria-label="Conversation actions"><button type="button" id="cg-history-toggle" aria-expanded="false" aria-controls="cg-history">Recent chats</button><button type="button" id="cg-clear">Clear chat</button></nav>
+<div id="cg-confirm" class="cg-confirm" role="group" aria-live="assertive" aria-labelledby="cg-confirm-text" hidden><span id="cg-confirm-text"></span><div><button type="button" id="cg-confirm-cancel">Cancel</button><button type="button" id="cg-confirm-accept">Confirm</button></div></div>
 <div id="cg-history" aria-label="Recent conversations" hidden></div>
-<div id="cg-log" aria-live="polite" aria-relevant="additions text"></div>
+<div id="cg-log" role="log" aria-label="Conversation" aria-live="off"></div>
+<div id="cg-live" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="cg-suggestions" role="group" aria-label="Suggested prompts"></div>
 <form id="cg-f" autocomplete="off"><label class="sr-only" for="cg-i">Message COMGAB Assistant</label><textarea id="cg-i" placeholder="Ask anything… (Enter to send)" rows="1" maxlength="10000"></textarea><button type="submit" id="cg-send" aria-label="Send message"><span>Send</span></button></form>
 <p id="cg-error" role="status" aria-live="polite" hidden></p></section>`;
@@ -32,6 +34,12 @@ const css=`
 #cg .cg-toolbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:#131d2c;border-bottom:1px solid rgba(204,218,238,.12)}
 #cg .cg-toolbar button{border:0;background:none;color:#ccd5e2;font:inherit;font-size:.76rem;padding:5px 8px;border-radius:7px;cursor:pointer}
 #cg .cg-toolbar button:hover{background:rgba(255,255,255,.08);color:#fff}
+#cg .cg-confirm{flex:none;padding:10px 12px;background:#282719;border-bottom:1px solid rgba(201,170,104,.3);color:#f3ecd9;font-size:.78rem}
+#cg .cg-confirm[hidden]{display:none}
+#cg .cg-confirm>div{display:flex;justify-content:flex-end;gap:7px;margin-top:8px}
+#cg .cg-confirm button,#cg .cg-rename button{border:1px solid rgba(204,218,238,.3);border-radius:7px;background:rgba(255,255,255,.06);color:#f1f3f6;font:inherit;font-size:.73rem;padding:5px 9px;cursor:pointer}
+#cg .cg-confirm button:last-child{border-color:rgba(201,170,104,.65);color:#f2d89a}
+#cg .cg-confirm button:hover,#cg .cg-rename button:hover{background:rgba(255,255,255,.14)}
 #cg-history{flex:none;max-height:180px;overflow:auto;padding:7px 10px;background:#111a29;border-bottom:1px solid rgba(204,218,238,.17)}
 #cg-history[hidden]{display:none}
 #cg .cg-history-row{display:flex;align-items:center;gap:4px;padding:3px;border-radius:8px}
@@ -40,6 +48,8 @@ const css=`
 #cg .cg-history-row[aria-current="true"] .cg-history-open{color:#f2d89a}
 #cg .cg-history-action{border:1px solid transparent;border-radius:6px;background:transparent;color:#aebbd0;font:inherit;font-size:.7rem;padding:5px;cursor:pointer}
 #cg .cg-history-action:hover{border-color:#617087;color:#fff}
+#cg .cg-rename{display:flex;align-items:center;gap:6px;flex:1}
+#cg .cg-rename input{flex:1;min-width:0;padding:6px 8px;border-radius:7px;border:1px solid #53627a;background:#202d40;color:#f7f9fc;font:inherit;font-size:.78rem}
 #cg-log{flex:1;min-height:0;overflow-y:auto;padding:16px;background:#182233;display:flex;flex-direction:column;gap:13px;scrollbar-color:#73829a #182233;scrollbar-width:thin}
 #cg-log::-webkit-scrollbar,#cg-history::-webkit-scrollbar{width:9px}
 #cg-log::-webkit-scrollbar-track,#cg-history::-webkit-scrollbar-track{background:#182233}
@@ -75,7 +85,7 @@ const css=`
 #cg-suggestions button{font:inherit;font-size:.73rem;color:#e3d3a9;background:rgba(157,123,53,.12);border:1px solid rgba(201,170,104,.4);border-radius:999px;padding:6px 10px;cursor:pointer}
 #cg-suggestions button:hover{background:rgba(157,123,53,.24)}
 #cg form{flex:none;display:flex;align-items:flex-end;gap:8px;padding:10px;background:#111a29;border-top:1px solid rgba(204,218,238,.2)}
-#cg textarea{flex:1;min-width:0;max-height:140px;resize:none;padding:10px 13px;border-radius:15px;background:#202d40;border:1px solid #53627a;color:#f7f9fc;font:inherit;font-size:.85rem;line-height:1.45}
+#cg textarea{flex:1;min-width:0;min-height:40px;height:40px;max-height:140px;resize:none;padding:10px 13px;border-radius:15px;background:#202d40;border:1px solid #53627a;color:#f7f9fc;font:inherit;font-size:.85rem;line-height:1.45}
 #cg textarea::placeholder{color:#c0cada;opacity:1}
 #cg textarea:focus{border-color:#c3a45e;box-shadow:0 0 0 3px rgba(195,164,94,.18);outline:0}
 #cg form button{flex:none;min-width:66px;min-height:40px;border:0;border-radius:12px;padding:0 13px;font-weight:700;cursor:pointer;background:linear-gradient(120deg,#e1c47e,#b89145);color:#1b1a16;font-family:inherit;transition:filter .2s,transform .2s}
@@ -95,6 +105,7 @@ const byId=id=>document.getElementById(id);
 const box=byId('cg');
 const opener=byId('cg-btn');
 const log=byId('cg-log');
+const liveStatus=byId('cg-live');
 const input=byId('cg-i');
 const sendButton=byId('cg-send');
 const form=byId('cg-f');
@@ -102,6 +113,8 @@ const errorBox=byId('cg-error');
 const historyPanel=byId('cg-history');
 const historyToggle=byId('cg-history-toggle');
 const suggestions=byId('cg-suggestions');
+const confirmation=byId('cg-confirm');
+let confirmAction=null;
 let controller=null;
 let storedOk=true;
 
@@ -132,20 +145,47 @@ function inlineMarkdown(text){
   return html.replace(/  \n/g,'<br>').replace(/\n/g,'<br>');
 }
 function renderMarkdown(markdown){
-  return escapeHtml(markdown).split(/\n{2,}/).map(block=>{
-    const fence=block.match(/^```([a-z0-9_-]*)\n?([\s\S]*?)\n?```$/i);
-    if(fence)return `<pre><code${fence[1]?` class="language-${fence[1]}"`:''}>${fence[2]}</code></pre>`;
-    const heading=block.match(/^(#{1,3})\s+(.+)$/);
-    if(heading)return `<h${heading[1].length}>${inlineMarkdown(heading[2])}</h${heading[1].length}>`;
-    const lines=block.split('\n');
-    const unordered=lines.every(line=>/^\s*[-*+]\s+/.test(line));
-    const ordered=lines.every(line=>/^\s*\d+[.)]\s+/.test(line));
-    if(unordered||ordered){
-      const tag=ordered?'ol':'ul';
-      return `<${tag}>${lines.map(line=>`<li>${inlineMarkdown(line.replace(/^\s*(?:[-*+]|\d+[.)])\s+/,''))}</li>`).join('')}</${tag}>`;
+  const lines=escapeHtml(markdown).split('\n');
+  const blocks=[];
+  let index=0;
+  while(index<lines.length){
+    if(!lines[index].trim()){index+=1;continue}
+    const fence=lines[index].match(/^\s*```([a-z0-9_-]*)\s*$/i);
+    if(fence){
+      index+=1;
+      const code=[];
+      while(index<lines.length&&!/^\s*```\s*$/.test(lines[index]))code.push(lines[index++]);
+      if(index<lines.length)index+=1;
+      blocks.push(`<pre><code${fence[1]?` class="language-${fence[1]}"`:''}>${code.join('\n')}</code></pre>`);
+      continue;
     }
-    return `<p>${inlineMarkdown(block)}</p>`;
-  }).join('');
+    const heading=lines[index].match(/^(#{1,3})\s+(.+)$/);
+    if(heading){
+      const level=heading[1].length;
+      blocks.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
+      index+=1;
+      continue;
+    }
+    const listMatch=lines[index].match(/^\s*([-*+]|\d+[.)])\s+/);
+    if(listMatch){
+      const ordered=/^\d/.test(listMatch[1]);
+      const items=[];
+      while(index<lines.length){
+        const item=lines[index].match(/^\s*([-*+]|\d+[.)])\s+(.+)$/);
+        if(!item||/^\d/.test(item[1])!==ordered)break;
+        items.push(`<li>${inlineMarkdown(item[2])}</li>`);
+        index+=1;
+      }
+      blocks.push(`<${ordered?'ol':'ul'}>${items.join('')}</${ordered?'ol':'ul'}>`);
+      continue;
+    }
+    const paragraph=[];
+    while(index<lines.length&&lines[index].trim()&&!/^\s*```/.test(lines[index])&&!/^#{1,3}\s+/.test(lines[index])&&!/^\s*([-*+]|\d+[.)])\s+/.test(lines[index])){
+      paragraph.push(lines[index++]);
+    }
+    blocks.push(`<p>${inlineMarkdown(paragraph.join('\n'))}</p>`);
+  }
+  return blocks.join('');
 }
 function makeChat(){
   return {id:crypto.randomUUID(),title:'New chat',updatedAt:Date.now(),messages:[]};
@@ -162,7 +202,10 @@ function loadChats(){
         messages:chat.messages.filter(message=>message&&['user','assistant'].includes(message.role)&&typeof message.content==='string')
           .slice(-MAX_STORED_MESSAGES).map(message=>({role:message.role,content:message.content.slice(0,10000)}))
       }));
-  }catch{return []}
+  }catch{
+    storedOk=false;
+    return [];
+  }
 }
 let chats=loadChats();
 if(!chats.length)chats=[makeChat()];
@@ -231,6 +274,18 @@ function createMessage(message,index,total){
   }
   return article;
 }
+function hideConfirmation(){
+  confirmation.hidden=true;
+  confirmAction=null;
+}
+function showConfirmation(message,label,action){
+  byId('cg-confirm-text').textContent=message;
+  const accept=byId('cg-confirm-accept');
+  accept.textContent=label;
+  confirmAction=action;
+  confirmation.hidden=false;
+  accept.focus();
+}
 function renderHistory(){
   historyPanel.replaceChildren();
   for(const chat of [...chats].sort((a,b)=>b.updatedAt-a.updatedAt)){
@@ -238,6 +293,8 @@ function renderHistory(){
     row.className='cg-history-row';
     row.setAttribute('aria-current',String(chat.id===currentId));
     const open=makeAction(chat.title||'New chat',()=>{
+      if(controller)controller.abort();
+      hideConfirmation();
       currentId=chat.id;
       historyPanel.hidden=true;
       historyToggle.setAttribute('aria-expanded','false');
@@ -247,23 +304,40 @@ function renderHistory(){
     open.className='cg-history-open';
     open.title=chat.title||'New chat';
     const rename=makeAction('Rename',()=>{
-      const title=prompt('Rename this conversation',chat.title);
-      if(title===null)return;
-      const trimmed=title.trim();
-      if(!trimmed)return;
-      chat.title=trimmed.slice(0,80);
-      chat.updatedAt=Date.now();
-      persist();
-      render();
+      const form=document.createElement('form');
+      form.className='cg-rename';
+      const field=document.createElement('input');
+      field.type='text';
+      field.value=chat.title;
+      field.maxLength=80;
+      field.setAttribute('aria-label','Conversation name');
+      const save=document.createElement('button');
+      save.type='submit';
+      save.textContent='Save';
+      const cancel=makeAction('Cancel',render);
+      form.addEventListener('submit',event=>{
+        event.preventDefault();
+        const nextTitle=field.value.trim();
+        if(!nextTitle){field.focus();return}
+        chat.title=nextTitle.slice(0,80);
+        chat.updatedAt=Date.now();
+        persist();
+        render();
+      });
+      form.replaceChildren(field,save,cancel);
+      row.replaceChildren(form);
+      field.focus();
+      field.select();
     });
     rename.className='cg-history-action';
     const remove=makeAction('Delete',()=>{
-      if(!confirm(`Delete "${chat.title}" from this device?`))return;
-      chats=chats.filter(item=>item.id!==chat.id);
-      if(!chats.length)chats=[makeChat()];
-      if(currentId===chat.id)currentId=chats[0].id;
-      persist();
-      render();
+      showConfirmation(`Delete "${chat.title}" from this device?`, 'Delete',()=>{
+        chats=chats.filter(item=>item.id!==chat.id);
+        if(!chats.length)chats=[makeChat()];
+        if(currentId===chat.id)currentId=chats[0].id;
+        persist();
+        render();
+      });
     });
     remove.className='cg-history-action';
     row.append(open,rename,remove);
@@ -293,7 +367,9 @@ function render(){
     suggestions.hidden=true;
   }
   renderHistory();
-  if(storedOk)byId('cg-status').textContent=controller?'Generating response…':'AI assistant · history saved on this device';
+  byId('cg-status').textContent=controller
+    ?'Generating response…'
+    :storedOk?'AI assistant · history saved on this device':'History storage unavailable · active chat stays in memory';
   if(controller){
     const typing=document.createElement('div');
     typing.className='cg-typing';
@@ -325,6 +401,7 @@ async function requestAssistant(){
   controller=activeController;
   const assistantMessage={role:'assistant',content:''};
   chat.messages.push(assistantMessage);
+  liveStatus.textContent='Assistant is responding.';
   showError('');
   persist();
   render();
@@ -377,10 +454,12 @@ async function requestAssistant(){
     chat.updatedAt=Date.now();
     chat.messages=chat.messages.slice(-MAX_STORED_MESSAGES);
     persist();
+    liveStatus.textContent='Assistant response complete.';
     render();
   }catch(error){
     if(error.name!=='AbortError'){
       chat.messages=chat.messages.filter(message=>message!==assistantMessage);
+      liveStatus.textContent='The assistant could not complete the response.';
       showError(error.message||'The assistant is unavailable. Please try again.', 'Retry',()=>requestAssistant());
       persist();
       render();
@@ -389,8 +468,10 @@ async function requestAssistant(){
       if(assistantMessage.content){
         chat.updatedAt=Date.now();
         persist();
+        liveStatus.textContent='Response generation stopped. The partial answer is saved.';
       }else{
         chat.messages=chat.messages.filter(message=>message!==assistantMessage);
+        liveStatus.textContent='Response generation stopped.';
       }
       render();
     }
@@ -424,6 +505,7 @@ function regenerate(){
 function newChat(){
   if(controller)controller.abort();
   controller=null;
+  hideConfirmation();
   const chat=makeChat();
   chats.unshift(chat);
   chats=chats.slice(0,MAX_CHATS);
@@ -446,19 +528,29 @@ function toggle(open){
 opener.addEventListener('click',()=>toggle(!box.classList.contains('open')));
 byId('cg-x').addEventListener('click',()=>{toggle(false);opener.focus()});
 byId('cg-new').addEventListener('click',newChat);
+byId('cg-confirm-cancel').addEventListener('click',()=>{
+  hideConfirmation();
+  byId('cg-clear').focus();
+});
+byId('cg-confirm-accept').addEventListener('click',()=>{
+  const action=confirmAction;
+  hideConfirmation();
+  if(action)action();
+});
 historyToggle.addEventListener('click',()=>{
   historyPanel.hidden=!historyPanel.hidden;
   historyToggle.setAttribute('aria-expanded',String(!historyPanel.hidden));
 });
 byId('cg-clear').addEventListener('click',()=>{
   if(controller)return;
-  if(!confirm('Clear all messages in this conversation? This cannot be undone.'))return;
-  currentChat().messages=[];
-  currentChat().title='New chat';
-  currentChat().updatedAt=Date.now();
-  showError('');
-  persist();
-  render();
+  showConfirmation('Clear all messages in this conversation? This cannot be undone.','Clear messages',()=>{
+    currentChat().messages=[];
+    currentChat().title='New chat';
+    currentChat().updatedAt=Date.now();
+    showError('');
+    persist();
+    render();
+  });
 });
 form.addEventListener('submit',event=>{
   event.preventDefault();

@@ -23,6 +23,13 @@ test('serves the static homepage from the root path', async t => {
   assert.match(await response.text(), /COMGAB DIGITAL/);
 });
 
+test('does not expose environment files or server implementation as static assets', async t => {
+  const baseUrl = await listen(t, {});
+  for (const path of ['/.env', '/server.mjs', '/package.json', '/tests/server.test.mjs']) {
+    assert.equal((await fetch(`${baseUrl}${path}`)).status, 404);
+  }
+});
+
 test('reports a clear setup error if the model key is missing', async t => {
   const baseUrl = await listen(t, {});
   const response = await fetch(`${baseUrl}/api/chat`, {

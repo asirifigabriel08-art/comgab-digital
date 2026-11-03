@@ -21,6 +21,27 @@ if('IntersectionObserver'in window){
 }else{
   document.querySelectorAll('.rv').forEach(el=>el.classList.add('in'));
 }
+document.querySelectorAll('#work .thumb img[data-screenshot-path]').forEach(image=>{
+  const fallback=()=>{
+    const thumb=image.closest('.thumb');
+    const project=image.closest('.project-card');
+    if(!thumb||!project||thumb.classList.contains('screenshot-pending'))return;
+    const title=document.createElement('span');
+    title.className='preview-title';
+    title.textContent=project.querySelector('h3')?.textContent.trim()||'Project preview';
+    const note=document.createElement('span');
+    note.className='preview-note';
+    note.textContent=`Screenshot unavailable · add ${image.dataset.screenshotPath}`;
+    image.remove();
+    thumb.classList.add('screenshot-pending');
+    thumb.setAttribute('role','img');
+    thumb.setAttribute('aria-label',`${title.textContent} screenshot unavailable. Add ${image.dataset.screenshotPath} to restore the project preview.`);
+    thumb.insertBefore(note,thumb.firstChild);
+    thumb.insertBefore(title,thumb.firstChild);
+  };
+  image.addEventListener('error',fallback);
+  if(image.complete&&image.naturalWidth===0)fallback();
+});
 const sc=document.getElementById('scene');
 if(sc&&matchMedia('(hover:hover) and (prefers-reduced-motion: no-preference)').matches){
   sc.addEventListener('mousemove',e=>{
