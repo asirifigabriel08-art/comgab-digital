@@ -247,3 +247,23 @@ footer{background:#252722;color:#f6f3eb}footer a{color:#c9c5ba!important}footer 
 @media(max-width:900px){nav.s{backdrop-filter:blur(16px)}}
 @media(prefers-reduced-motion:reduce){.orb{animation:none}}
 .logo{display:inline-flex;align-items:center;gap:10px}.logo .lm{width:36px;height:36px;flex:none;transition:transform .4s}.logo:hover .lm{transform:rotate(-8deg) scale(1.06)}
+
+/* Live project previews */
+.projects{align-items:stretch}
+.project-card{display:flex;flex-direction:column}
+.project-card .thumb{width:100%;height:auto;aspect-ratio:16/10;margin:0 0 18px;border-radius:14px;isolation:isolate}
+.project-card .thumb:before,.project-card .thumb:after{content:none}
+.project-card .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .5s ease}
+.project-card:hover .thumb img{transform:scale(1.035)}
+.project-card .thumb span{position:absolute;z-index:1;left:12px;bottom:12px;padding:5px 10px;border:1px solid rgba(255,255,255,.32);border-radius:999px;background:rgba(24,27,24,.82);color:#fff;font-size:.72rem;line-height:1.35;letter-spacing:.04em}
+.project-card .thumb .preview-title,.project-card .thumb .preview-note{position:static;display:block;padding:0;border:0;border-radius:0;background:none;color:inherit;letter-spacing:normal}
+.project-card .thumb.screenshot-pending{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;padding:24px;background:#e8e4da;color:#45463f;text-align:center}
+.project-card .thumb .preview-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.7rem;font-weight:700;line-height:1.15}
+.project-card .thumb .preview-note{font-size:.82rem}
+.project-card .thumb.screenshot-pending>span:last-child{position:absolute;left:12px;bottom:12px;padding:5px 10px;border:1px solid rgba(255,255,255,.32);border-radius:999px;background:rgba(24,27,24,.82);color:#fff;font-size:.72rem;line-height:1.35;letter-spacing:.04em}
+.project-card h3{margin:0 0 10px}
+.project-card p{flex:1}
+.project-link{display:inline-flex;align-items:center;gap:6px;margin-top:18px;color:#806833;font-weight:600;font-size:.9rem}
+.project-link b{transition:transform .2s}
+.project-card:hover .project-link b{transform:translate(2px,-2px)}
+@media(max-width:560px){.project-card .thumb{aspect-ratio:16/10}}
