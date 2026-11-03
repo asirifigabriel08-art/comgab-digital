@@ -9,7 +9,7 @@ const REQUEST_ERROR='Sorry, I couldn\'t reach the assistant right now. Please tr
 const root=document.createElement('div');
 root.innerHTML=`<button id="cg-btn" type="button" aria-label="Open chat assistant" aria-expanded="false" aria-controls="cg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg></button>
 <section id="cg" role="dialog" aria-label="COMGAB Assistant" aria-modal="false"><header><i aria-hidden="true"></i><div class="cg-brand"><b>COMGAB Assistant</b><small id="cg-status">AI assistant · private chat history</small></div><button type="button" id="cg-new" aria-label="Start a new chat" title="New chat">＋</button><button type="button" id="cg-x" aria-label="Close chat">&times;</button></header>
-<nav class="cg-toolbar" aria-label="Conversation actions"><button type="button" id="cg-history-toggle" aria-expanded="false" aria-controls="cg-history">Recent chats</button><button type="button" id="cg-clear">Clear chat</button></nav>
+<nav class="cg-toolbar" aria-label="Conversation actions"><button type="button" id="cg-history-toggle" aria-expanded="false" aria-controls="cg-history">Recent chats</button><button type="button" id="cg-clear">Clear chat</button><a href="https://wa.me/233549191228" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">Chat on WhatsApp</a></nav>
 <div id="cg-confirm" class="cg-confirm" role="group" aria-live="assertive" aria-labelledby="cg-confirm-text" hidden><span id="cg-confirm-text"></span><div><button type="button" id="cg-confirm-cancel">Cancel</button><button type="button" id="cg-confirm-accept">Confirm</button></div></div>
 <div id="cg-history" aria-label="Recent conversations" hidden></div>
 <div id="cg-log" role="log" aria-label="Conversation" aria-live="off"></div>
@@ -23,7 +23,7 @@ const css=`
 #cg-btn{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:90;width:60px;height:60px;border-radius:50%;border:0;cursor:pointer;background:linear-gradient(120deg,#70e9f4,#8c9cff);color:#02121a;box-shadow:0 10px 30px rgba(58,196,220,.35);display:grid;place-items:center;transition:transform .25s}
 #cg-btn:hover{transform:scale(1.07)}
 #cg-btn svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-#cg{position:fixed;right:20px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:90;width:min(420px,calc(100vw - 32px));height:min(640px,calc(100svh - 130px));min-height:min(340px,calc(100svh - 130px));display:flex;flex-direction:column;border-radius:22px;background:#111a29;border:1px solid rgba(204,218,238,.28);backdrop-filter:blur(18px);box-shadow:0 30px 80px rgba(0,0,0,.55);overflow:hidden;opacity:0;visibility:hidden;transform:translateY(14px) scale(.98);transition:opacity .25s,transform .25s,visibility .25s}
+#cg{position:fixed;right:16px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:90;width:min(440px,calc(100vw - 32px));height:min(640px,80vh);min-height:min(340px,80vh);display:flex;flex-direction:column;border-radius:22px;background:#111a29;border:1px solid rgba(204,218,238,.28);backdrop-filter:blur(18px);box-shadow:0 30px 80px rgba(0,0,0,.55);overflow:hidden;opacity:0;visibility:hidden;transform:translateY(14px) scale(.98);transition:opacity .25s,transform .25s,visibility .25s}
 #cg.open{opacity:1;visibility:visible;transform:none}
 #cg header{flex:none;padding:12px 14px;background:#101725;border-bottom:1px solid rgba(204,218,238,.2);display:flex;align-items:center;gap:10px}
 #cg header>i{width:10px;height:10px;flex:none;border-radius:50%;background:#4ade80;box-shadow:0 0 10px #4ade80}
@@ -35,6 +35,8 @@ const css=`
 #cg .cg-toolbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:#131d2c;border-bottom:1px solid rgba(204,218,238,.12)}
 #cg .cg-toolbar button{border:0;background:none;color:#ccd5e2;font:inherit;font-size:.76rem;padding:5px 8px;border-radius:7px;cursor:pointer}
 #cg .cg-toolbar button:hover{background:rgba(255,255,255,.08);color:#fff}
+#cg .cg-toolbar a{border:0;background:none;color:#ccd5e2;font:inherit;font-size:.76rem;padding:5px 8px;border-radius:7px;cursor:pointer;text-decoration:none}
+#cg .cg-toolbar a:hover{background:rgba(255,255,255,.08);color:#fff}
 #cg .cg-confirm{flex:none;padding:10px 12px;background:#282719;border-bottom:1px solid rgba(201,170,104,.3);color:#f3ecd9;font-size:.78rem}
 #cg .cg-confirm[hidden]{display:none}
 #cg .cg-confirm>div{display:flex;justify-content:flex-end;gap:7px;margin-top:8px}
@@ -51,15 +53,15 @@ const css=`
 #cg .cg-history-action:hover{border-color:#617087;color:#fff}
 #cg .cg-rename{display:flex;align-items:center;gap:6px;flex:1}
 #cg .cg-rename input{flex:1;min-width:0;padding:6px 8px;border-radius:7px;border:1px solid #53627a;background:#202d40;color:#f7f9fc;font:inherit;font-size:.78rem}
-#cg-log{flex:1;min-height:0;overflow-y:auto;padding:16px;background:#182233;display:flex;flex-direction:column;gap:13px;scrollbar-color:#73829a #182233;scrollbar-width:thin}
+#cg-log{flex:1;min-height:0;overflow-y:auto;padding:16px;background:#182233;display:flex;flex-direction:column;gap:13px;scrollbar-color:#73829a #182233;scrollbar-width:thin;scroll-behavior:smooth}
 #cg-log::-webkit-scrollbar,#cg-history::-webkit-scrollbar{width:9px}
 #cg-log::-webkit-scrollbar-track,#cg-history::-webkit-scrollbar-track{background:#182233}
 #cg-log::-webkit-scrollbar-thumb,#cg-history::-webkit-scrollbar-thumb{background:#73829a;border:2px solid #182233;border-radius:999px}
 #cg-log::-webkit-scrollbar-thumb:hover,#cg-history::-webkit-scrollbar-thumb:hover{background:#a5b1c2}
-#cg .cm{max-width:96%;padding:11px 13px;border-radius:15px;font-size:.88rem;line-height:1.6;overflow-wrap:anywhere;animation:cmin .2s ease}
+#cg .cm{max-width:85%;padding:11px 13px;border-radius:15px;font-size:15px;line-height:1.65;overflow-wrap:anywhere;animation:cmin .2s ease}
 @keyframes cmin{from{opacity:0;transform:translateY(5px)}}
 #cg .cm.u{max-width:88%;align-self:flex-end;background:#29384c;border:1px solid #485b74;color:#f5f7fb;border-bottom-right-radius:5px;white-space:pre-wrap}
-#cg .cm.b{align-self:stretch;color:#edf2f8}
+#cg .cm.b{align-self:flex-start;color:#edf2f8}
 #cg .cm-content p{margin:0 0 .75em}
 #cg .cm-content p:last-child{margin-bottom:0}
 #cg .cm-content h1,#cg .cm-content h2,#cg .cm-content h3{font-family:'DM Sans',system-ui,sans-serif;line-height:1.3;color:#fff;margin:.85em 0 .45em}
@@ -86,18 +88,18 @@ const css=`
 #cg-suggestions button{font:inherit;font-size:.73rem;color:#e3d3a9;background:rgba(157,123,53,.12);border:1px solid rgba(201,170,104,.4);border-radius:999px;padding:6px 10px;cursor:pointer}
 #cg-suggestions button:hover{background:rgba(157,123,53,.24)}
 #cg form{flex:none;display:flex;align-items:flex-end;gap:8px;padding:10px;background:#111a29;border-top:1px solid rgba(204,218,238,.2)}
-#cg textarea{flex:1;min-width:0;min-height:40px;height:40px;max-height:140px;resize:none;padding:10px 13px;border-radius:15px;background:#202d40;border:1px solid #53627a;color:#f7f9fc;font:inherit;font-size:.85rem;line-height:1.45}
+#cg textarea{flex:1;min-width:0;min-height:68px;height:68px;max-height:140px;resize:none;padding:10px 13px;border-radius:15px;background:#202d40;border:1px solid #53627a;color:#f7f9fc;font:inherit;font-size:.95rem;line-height:1.45}
 #cg textarea::placeholder{color:#c0cada;opacity:1}
 #cg textarea:focus{border-color:#c3a45e;box-shadow:0 0 0 3px rgba(195,164,94,.18);outline:0}
-#cg form button{flex:none;min-width:66px;min-height:40px;border:0;border-radius:12px;padding:0 13px;font-weight:700;cursor:pointer;background:linear-gradient(120deg,#e1c47e,#b89145);color:#1b1a16;font-family:inherit;transition:filter .2s,transform .2s}
+#cg form button{flex:none;min-width:76px;min-height:52px;border:0;border-radius:12px;padding:0 15px;font-weight:700;cursor:pointer;background:linear-gradient(120deg,#e1c47e,#b89145);color:#1b1a16;font-family:inherit;transition:filter .2s,transform .2s}
 #cg form button:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px)}
 #cg form button:disabled{opacity:.52;cursor:not-allowed}
 #cg form button.cg-stop{background:#344258;color:#f4f6fb;border:1px solid #64748b}
 #cg #cg-error{flex:none;margin:0;padding:7px 12px;background:#32212a;color:#ffd9df;font-size:.76rem}
 #cg #cg-error[hidden]{display:none}
 #cg button:focus-visible,#cg textarea:focus-visible{outline:3px solid #f2d89a;outline-offset:2px}
-@media(max-width:560px){#cg{left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:auto;height:min(700px,calc(100svh - 100px));min-height:min(300px,calc(100svh - 100px));border-radius:19px}#cg-log{padding:13px}#cg .cm{max-width:100%}#cg header{padding:10px 11px}#cg .cg-toolbar{padding:5px 9px}}
-@media(prefers-reduced-motion:reduce){#cg,#cg .cm,#cg .cg-typing i{animation:none;transition:none}}`;
+@media(max-width:599px){#cg{left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:calc(100vw - 24px);height:85vh;min-height:0;border-radius:19px}#cg-log{padding:13px}#cg .cm{max-width:85%}#cg header{padding:10px 11px}#cg .cg-toolbar{padding:5px 9px}}
+@media(prefers-reduced-motion:reduce){#cg,#cg .cm,#cg .cg-typing i{animation:none;transition:none}#cg-log{scroll-behavior:auto}}`;
 const style=document.createElement('style');
 style.textContent=css;
 document.head.appendChild(style);
@@ -120,9 +122,9 @@ let controller=null;
 let storedOk=true;
 
 const promptIdeas=[
-  ['Help me improve my website','I have a website. Suggest a practical plan to improve its clarity, accessibility, and conversions.'],
-  ['Write something','Help me write a polished, friendly email to a new client.'],
-  ['Explain a coding concept','Explain how CSS Grid works, with a small example.']
+  ['I need a website','I need a website'],
+  ['What services do you offer?','What services do you offer?'],
+  ['I want a quote','I want a quote']
 ];
 
 function escapeHtml(text){
