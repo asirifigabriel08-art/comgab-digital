@@ -4,7 +4,8 @@
 const STORAGE_KEY='comgab-ai-conversations-v1';
 const MAX_CHATS=25;
 const MAX_STORED_MESSAGES=80;
-const API_URL=window.COMGAB_CHAT_API_URL||'/api/chat';
+const API_URL=window.COMGAB_CHAT_API_URL||'https://comgab-chat.comgabdigital.workers.dev';
+const REQUEST_ERROR='Sorry, I couldn\'t reach the assistant right now. Please try again or contact us on WhatsApp.';
 const root=document.createElement('div');
 root.innerHTML=`<button id="cg-btn" type="button" aria-label="Open chat assistant" aria-expanded="false" aria-controls="cg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg></button>
 <section id="cg" role="dialog" aria-label="COMGAB Assistant" aria-modal="false"><header><i aria-hidden="true"></i><div class="cg-brand"><b>COMGAB Assistant</b><small id="cg-status">AI assistant · private chat history</small></div><button type="button" id="cg-new" aria-label="Start a new chat" title="New chat">＋</button><button type="button" id="cg-x" aria-label="Close chat">&times;</button></header>
@@ -406,51 +407,20 @@ async function requestAssistant(){
   persist();
   render();
   try{
-    const endpoint=new URL(API_URL,location.href);
+    const endpoint=new URL(API_URL);
     if(!['http:','https:'].includes(endpoint.protocol)||location.protocol==='https:'&&endpoint.protocol!=='https:'){
       throw new Error('The chat API URL must use HTTPS on this website.');
     }
     const response=await fetch(endpoint.href,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Accept':'text/event-stream'},
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({messages:getContext()}),
       signal:activeController.signal
     });
-    if(!response.ok){
-      let message=response.status===404
-        ?'The AI service is not connected yet. Deploy the chat server and configure its API URL to enable responses.'
-        :'The AI service could not complete that request. Please try again.';
-      try{message=(await response.json()).error||message}catch{}
-      throw new Error(message);
-    }
-    if(!response.body)throw new Error('Streaming is unavailable in this browser. Please try again in a current browser.');
-    const reader=response.body.getReader();
-    const decoder=new TextDecoder();
-    let pending='';
-    let finished=false;
-    while(!finished){
-      const {value,done}=await reader.read();
-      pending+=decoder.decode(value||new Uint8Array(),{stream:!done});
-      const lines=pending.split(/\r?\n/);
-      pending=lines.pop()||'';
-      for(const line of lines){
-        if(!line.startsWith('data:'))continue;
-        const data=line.slice(5).trim();
-        if(data==='[DONE]'){finished=true;break}
-        let payload;
-        try{payload=JSON.parse(data)}catch{continue}
-        if(payload.error)throw new Error(payload.error);
-        if(typeof payload.token==='string'){
-          assistantMessage.content+=payload.token;
-          const bubble=log.querySelector('.cm.b:last-of-type .cm-content');
-          if(bubble)bubble.textContent=assistantMessage.content;
-          else render();
-          scrollToBottom();
-        }
-      }
-      if(done)finished=true;
-    }
-    if(!assistantMessage.content)throw new Error('The AI returned an empty response. Please retry.');
+    if(!response.ok)throw new Error(REQUEST_ERROR);
+    const data=await response.json();
+    if(typeof data.reply!=='string'||!data.reply.trim())throw new Error(REQUEST_ERROR);
+    assistantMessage.content=data.reply.trim();
     chat.updatedAt=Date.now();
     chat.messages=chat.messages.slice(-MAX_STORED_MESSAGES);
     persist();
@@ -460,7 +430,7 @@ async function requestAssistant(){
     if(error.name!=='AbortError'){
       chat.messages=chat.messages.filter(message=>message!==assistantMessage);
       liveStatus.textContent='The assistant could not complete the response.';
-      showError(error.message||'The assistant is unavailable. Please try again.', 'Retry',()=>requestAssistant());
+      showError(REQUEST_ERROR, 'Retry',()=>requestAssistant());
       persist();
       render();
     }else{

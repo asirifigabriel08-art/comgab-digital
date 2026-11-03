@@ -1,6 +1,6 @@
 # COMGAB Assistant setup
 
-The website is static, so the chat model runs through the included Node.js server. The browser never receives the model API key. The server requires Node.js 20 or later and uses the built-in `fetch` API; it has no runtime package dependencies.
+The website is static and can send chat requests directly to a deployed Cloudflare Worker. The browser sends the recent conversation as `{ "messages": [...] }` and expects `{ "reply": "..." }`. Never put API keys or other secrets in browser code.
 
 ## Run locally
 
@@ -14,9 +14,9 @@ The website is static, so the chat model runs through the included Node.js serve
 
 ## Deploy
 
-Deploy this repository to a Node.js host that supports Node 20+ (for example, Render as a Node web service). Set the start command to `npm start` and configure `OPENAI_API_KEY`, `OPENAI_MODEL` (optional), and `CHAT_ALLOWED_ORIGINS` in the host's environment/secret settings. Set the allowed origin to the exact public site origin, such as `https://asirifigabriel08-art.github.io`. The service serves the existing static site and the `/api/chat` streaming endpoint from the same origin.
+For the deployed Cloudflare Worker, `js/chat-config.js` is configured with the Worker's full HTTPS URL. In the Worker CORS settings, allow the exact website origin `https://asirifigabriel08-art.github.io`. The site is hosted under the `/comgab-digital/` path, but the origin does not include that path.
 
-If you keep the site on GitHub Pages, deploy the Node server separately and set `window.COMGAB_CHAT_API_URL` in `js/chat-config.js` to the server's full HTTPS endpoint, such as `https://your-service.example/api/chat`. Set `CHAT_ALLOWED_ORIGINS` on the API host to the exact GitHub Pages origin. Do not add a trailing slash to the endpoint.
+For local development with the included Node.js server, which requires Node.js 20 or later and has no runtime package dependencies, temporarily set `window.COMGAB_CHAT_API_URL` in `js/chat-config.js` to `/api/chat` and run `npm start`. The server requires `OPENAI_API_KEY`; configure it in the server's environment, never in browser code. Set `CHAT_ALLOWED_ORIGINS` to the exact site origin if serving the site from a different host.
 
 ## Data and limits
 
