@@ -1,174 +1,489 @@
 (()=>{
-const EMAIL='comgabdigital@gmail.com';
-const pick=a=>a[Math.floor(Math.random()*a.length)];
-const state={name:null,used:{},last:'',asked:false};
+'use strict';
 
-// Each intent: regex, list of varied replies, optional follow-up suggestions.
-const intents=[
-{id:'greet',re:/\b(hi|hello|hey|good (morning|afternoon|evening)|howdy|yo)\b/i,r:[
- n=>`Hi${n}! 👋 Great to have you here. What are you looking to build?`,
- n=>`Hello${n}! Welcome to COMGAB DIGITAL. Tell me a bit about your idea and I'll point you the right way.`,
- n=>`Hey${n}! Happy you stopped by. Are you looking for a new business website, a redesign, or a landing page?`]},
-{id:'how',re:/how are you|how('s| is) it going|what'?s up/i,r:[
- ()=>`Doing great, thanks for asking! Ready to help. What brings you here today?`,
- ()=>`All good on my side 😊 How can I help with your project?`]},
-{id:'name',re:/(my name is|i am|i'm|call me)\s+([a-z]+)/i,r:[
- n=>`Nice to meet you${n}! What can we help you build?`,
- n=>`Lovely to meet you${n}. Are you after a website, an app, or something else?`]},
-{id:'web',re:/\b(web ?site|web ?dev|landing page|online store|e-?commerce|web app)\b/i,r:[
- ()=>`We build fast, responsive, conversion-focused websites, from business sites to online stores. Do you already have a brand and content, or are you starting from scratch?`,
- ()=>`Websites are one of our specialties. We handle design, development and launch. What's the website for?`,
- ()=>`Great choice! A strong website is the base of any online presence. Roughly what pages or features do you need?`]},
-{id:'app',re:/\b(mobile|app|ios|android|iphone)\b/i,r:[
- ()=>`We build polished iOS and Android apps. Is it for customers, your team, or both?`,
- ()=>`Mobile apps are right up our street. What should the app let people do?`,
- ()=>`Nice! Share the main idea of the app and I can tell you how we'd approach it.`]},
-{id:'ai',re:/\b(ai|artificial|video|content|copy|chatbot|automation)\b/i,r:[
- ()=>`Website care includes agreed content updates, routine checks and support. Do you already have a website?`]},
-{id:'ux',re:/\b(ui|ux|design|logo|brand|figma|wireframe)\b/i,r:[
- ()=>`Our UI/UX design focuses on clean, intuitive interfaces built around real users. Is this a new design or a redesign?`,
- ()=>`Design is where we love to start: wireframes, visuals, then a clickable look at the result. What are you designing?`]},
-{id:'seo',re:/\b(seo|google|rank|ranking|traffic|search)\b/i,r:[
- ()=>`We do technical and content SEO to help people find you on Google. Do you already have a site we should look at?`,
- ()=>`Good thinking, visibility matters. We optimise speed, structure and content. Is your site live yet?`]},
-{id:'maint',re:/\b(maintenance|support|update|fix|bug|broken|hosting|security)\b/i,r:[
- ()=>`We offer maintenance and support: updates, security and fixes so your site or app stays in top shape. What needs attention?`,
- ()=>`Happy to help keep things running smoothly. Is something broken right now, or do you want ongoing care?`]},
-{id:'price',re:/\b(price|cost|how much|quote|budget|pricing|rate|afford|cheap)\b/i,r:[
- ()=>`Pricing depends on scope, so we give a tailored quote after a short chat about your goals. Click "Start a Project" or tell me what you need and I'll help you prepare the request.`,
- ()=>`Every project is different, so we quote per project rather than guess. If you describe your idea, I'll help you send it to the team.`,
- ()=>`Fair question! We'll tailor a quote to your needs and budget. What are you planning to build?`]},
-{id:'time',re:/\b(how long|timeline|deadline|when|duration|turnaround|fast|quickly)\b/i,r:[
- ()=>`Timelines depend on the project size. A simple site can be quick, while apps take longer. We'll agree a clear schedule up front. Do you have a target date?`,
- ()=>`We'll give you a realistic timeline once we know the scope. Is there a date you need to hit?`]},
-{id:'process',re:/\b(process|steps|how do you work|workflow|how it works)\b/i,r:[
- ()=>`Simple: Discover (your goals), Design (wireframes and visuals), Build (with regular previews), then Launch & Grow (go live, support and optimise).`]},
-{id:'start',re:/start a project|get started|work with you|hire/i,r:[()=>`Wonderful! Tell me a little about your idea (what you want to build and roughly when). When you're ready, say \"email them\" and I'll open a message to the team, or use the contact form below.`,()=>`Love it! What kind of project is it: website, app, AI content or something else?`]},
-{id:'contact',re:/\b(contact|email|phone|call|reach|talk to|human|person|speak)\b/i,r:[
- ()=>`You can call or WhatsApp the team on +233 54 919 1228, email ${EMAIL}, or use the contact form at the bottom of the page. I can also open an email for you. Just say "email them".`]},
-{id:'emailnow',re:/email them|send (it|an email|a message)|open (an )?email/i,r:[
- ()=>`Opening an email to the team for you now 📧`],action:()=>{
-  const body=`Hi COMGAB DIGITAL,\n\n${state.name?'My name is '+state.name+'.\n':''}I'd like to discuss a project.\n`;
-  location.href=`mailto:${EMAIL}?subject=${encodeURIComponent('Project enquiry')}&body=${encodeURIComponent(body)}`}},
-{id:'who',re:/\b(who are you|what are you|are you (a )?(bot|robot|human|real))\b/i,r:[
- ()=>`I'm the COMGAB DIGITAL virtual assistant, an automated helper (not a person). I can answer questions about our services and help you get in touch with the team.`]},
-{id:'services',re:/\b(services|what do you (do|offer)|offer|help with)\b/i,r:[
- ()=>`Our main services are business website design, website redesigns, landing pages, responsive website improvements, basic SEO and ongoing website care. Which one interests you most?`]},
-{id:'thanks',re:/\b(thanks|thank you|thx|cheers|appreciate)\b/i,r:[
- ()=>`You're very welcome! 😊 Anything else I can help with?`,
- ()=>`My pleasure! I'm here if you have more questions.`,
- ()=>`Glad I could help! Feel free to ask anything else.`]},
-{id:'bye',re:/\b(bye|goodbye|see you|later|that'?s all)\b/i,r:[
- ()=>`Thanks for visiting COMGAB DIGITAL! Have a wonderful day 🌟`,
- ()=>`Take care! We'd love to work with you whenever you're ready.`]},
-{id:'yes',re:/^(yes|yeah|yep|sure|ok(ay)?|please|go ahead)\W*$/i,r:[
- ()=>`Great! Tell me a bit more about what you have in mind, and I'll guide you from there.`,
- ()=>`Perfect. What would you like to know or build first?`]},
-{id:'no',re:/^(no|nope|nah|not really)\W*$/i,r:[
- ()=>`No problem at all. Ask me anything whenever you like.`,
- ()=>`That's fine! Let me know if there's something else I can help with.`]}
-];
+const STORAGE_KEY='comgab-ai-conversations-v1';
+const MAX_CHATS=25;
+const MAX_STORED_MESSAGES=80;
+const API_URL=window.COMGAB_CHAT_API_URL||'/api/chat';
+const root=document.createElement('div');
+root.innerHTML=`<button id="cg-btn" type="button" aria-label="Open chat assistant" aria-expanded="false" aria-controls="cg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg></button>
+<section id="cg" role="dialog" aria-label="COMGAB Assistant" aria-modal="false"><header><i aria-hidden="true"></i><div class="cg-brand"><b>COMGAB Assistant</b><small id="cg-status">AI assistant · private chat history</small></div><button type="button" id="cg-new" aria-label="Start a new chat" title="New chat">＋</button><button type="button" id="cg-x" aria-label="Close chat">&times;</button></header>
+<nav class="cg-toolbar" aria-label="Conversation actions"><button type="button" id="cg-history-toggle" aria-expanded="false" aria-controls="cg-history">Recent chats</button><button type="button" id="cg-clear">Clear chat</button></nav>
+<div id="cg-history" aria-label="Recent conversations" hidden></div>
+<div id="cg-log" aria-live="polite" aria-relevant="additions text"></div>
+<div id="cg-suggestions" role="group" aria-label="Suggested prompts"></div>
+<form id="cg-f" autocomplete="off"><label class="sr-only" for="cg-i">Message COMGAB Assistant</label><textarea id="cg-i" placeholder="Ask anything… (Enter to send)" rows="1" maxlength="10000"></textarea><button type="submit" id="cg-send" aria-label="Send message"><span>Send</span></button></form>
+<p id="cg-error" role="status" aria-live="polite" hidden></p></section>`;
+document.body.appendChild(root);
 
-const fallbacks=[
- ()=>`Thanks for sharing that! Could you tell me a little more? I can help with business websites, redesigns, landing pages, SEO and website support.`,
-  ()=>`I want to get this right. Is this about a new website, a redesign, a landing page, or ongoing support?`,
- ()=>`Interesting! I may not have the full answer, but our team will. Want me to open an email to them (just say "email them")?`,
- ()=>`Could you rephrase that for me? Or ask about our services, process or pricing.`,
- ()=>`I'm not sure I caught that, but I'd love to help. What kind of project do you have in mind?`
-];
-
-function reply(text){
-  const t=text.trim();
-  const nm=t.match(/(my name is|i am|i'm|call me)\s+([a-z]+)/i);
-  if(nm&&!/^(looking|interested|here|a|an|the|just|not|building|want|need)$/i.test(nm[2]))
-    state.name=nm[2][0].toUpperCase()+nm[2].slice(1).toLowerCase();
-  const n=state.name?`, ${state.name}`:'';
-  // Match specific intents first; greetings only win if nothing else matches.
-  const hits=intents.filter(i=>i.re.test(t));
-  const hit=hits.find(i=>i.id!=='greet'&&i.id!=='yes'&&i.id!=='no')||hits[0];
-  let pool,id;
-  if(hit){
-    id=hit.id;pool=hit.r;
-    if(hit.action)setTimeout(hit.action,900);
-  }else{id='fb';pool=fallbacks}
-  const used=state.used[id]||(state.used[id]=[]);
-  let options=pool.map((f,i)=>i).filter(i=>!used.includes(i));
-  if(!options.length){used.length=0;options=pool.map((f,i)=>i)}
-  let out;
-  // Never repeat the previous message, even after a pool reset.
-  for(let tries=0;tries<10;tries++){
-    const idx=pick(options);out=pool[idx](n);
-    if(out!==state.last){used.push(idx);break}
-  }
-  state.last=out;
-  return out;
-}
-
-// UI
 const css=`
 #cg-btn{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:90;width:60px;height:60px;border-radius:50%;border:0;cursor:pointer;background:linear-gradient(120deg,#70e9f4,#8c9cff);color:#02121a;box-shadow:0 10px 30px rgba(58,196,220,.35);display:grid;place-items:center;transition:transform .25s}
 #cg-btn:hover{transform:scale(1.07)}
 #cg-btn svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-#cg{position:fixed;right:20px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:90;width:min(380px,calc(100vw - 32px));height:min(540px,calc(100svh - 130px));min-height:min(320px,calc(100svh - 130px));display:flex;flex-direction:column;border-radius:22px;background:#111a29;border:1px solid rgba(204,218,238,.28);backdrop-filter:blur(18px);box-shadow:0 30px 80px rgba(0,0,0,.55);overflow:hidden;opacity:0;visibility:hidden;transform:translateY(14px) scale(.98);transition:.3s}
+#cg{position:fixed;right:20px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:90;width:min(420px,calc(100vw - 32px));height:min(640px,calc(100svh - 130px));min-height:min(340px,calc(100svh - 130px));display:flex;flex-direction:column;border-radius:22px;background:#111a29;border:1px solid rgba(204,218,238,.28);backdrop-filter:blur(18px);box-shadow:0 30px 80px rgba(0,0,0,.55);overflow:hidden;opacity:0;visibility:hidden;transform:translateY(14px) scale(.98);transition:opacity .25s,transform .25s,visibility .25s}
 #cg.open{opacity:1;visibility:visible;transform:none}
-#cg header{padding:16px 18px;background:#101725;border-bottom:1px solid rgba(204,218,238,.2);display:flex;align-items:center;gap:12px}
-#cg header i{width:10px;height:10px;flex:none;border-radius:50%;background:#4ade80;box-shadow:0 0 10px #4ade80}
-#cg header b{font-family:'Space Grotesk',sans-serif;font-size:1rem;color:#f8fafc}
-#cg header small{display:block;color:#c1cada;font-size:.75rem}
-#cg header button{margin-left:auto;background:rgba(255,255,255,.08);border:1px solid rgba(204,218,238,.22);border-radius:8px;color:#f3f6fb;font-size:1.5rem;cursor:pointer;line-height:1;width:34px;height:34px;transition:background .2s,border-color .2s}
+#cg header{flex:none;padding:12px 14px;background:#101725;border-bottom:1px solid rgba(204,218,238,.2);display:flex;align-items:center;gap:10px}
+#cg header>i{width:10px;height:10px;flex:none;border-radius:50%;background:#4ade80;box-shadow:0 0 10px #4ade80}
+#cg .cg-brand{min-width:0;flex:1}
+#cg header b{font-family:'DM Sans',system-ui,sans-serif;font-size:.95rem;color:#f8fafc}
+#cg header small{display:block;color:#c1cada;font-size:.72rem}
+#cg header button{flex:none;background:rgba(255,255,255,.08);border:1px solid rgba(204,218,238,.22);border-radius:8px;color:#f3f6fb;font-size:1.2rem;cursor:pointer;line-height:1;width:34px;height:34px;transition:background .2s,border-color .2s}
 #cg header button:hover{background:rgba(255,255,255,.16);border-color:rgba(204,218,238,.42)}
-#cg-log{flex:1;min-height:0;overflow-y:auto;padding:16px;background:#182233;display:flex;flex-direction:column;gap:10px;scrollbar-color:#73829a #182233;scrollbar-width:thin}
-#cg-log::-webkit-scrollbar{width:9px}
-#cg-log::-webkit-scrollbar-track{background:#182233}
-#cg-log::-webkit-scrollbar-thumb{background:#73829a;border:2px solid #182233;border-radius:999px}
-#cg-log::-webkit-scrollbar-thumb:hover{background:#a5b1c2}
-.cm{max-width:84%;padding:10px 14px;border-radius:16px;font-size:.92rem;line-height:1.45;animation:cmin .25s ease;overflow-wrap:anywhere}
-@keyframes cmin{from{opacity:0;transform:translateY(6px)}}
-.cm.b{background:#2b394d;border:1px solid #45566d;color:#f2f5fa;align-self:flex-start;border-bottom-left-radius:5px}
-.cm.u{background:linear-gradient(120deg,#70e9f4,#8c9cff);color:#02121a;align-self:flex-end;border-bottom-right-radius:5px}
-.cm.t{display:flex;gap:4px;padding:14px}
-.cm.t span{width:6px;height:6px;border-radius:50%;background:#d6deeb;animation:td 1s infinite}
-.cm.t span:nth-child(2){animation-delay:.15s}.cm.t span:nth-child(3){animation-delay:.3s}
-@keyframes td{50%{opacity:.25;transform:translateY(-3px)}}
-#cg-q{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 10px}
-#cg-q button{font:inherit;font-size:.8rem;color:#a8f0f8;background:rgba(102,227,244,.1);border:1px solid rgba(102,227,244,.4);border-radius:999px;padding:6px 12px;cursor:pointer}
-#cg form{display:flex;gap:8px;padding:12px;background:#111a29;border-top:1px solid rgba(204,218,238,.2)}
-#cg input{flex:1;min-width:0;padding:11px 14px;border-radius:999px;background:#202d40;border:1px solid #53627a;color:#f7f9fc}
-#cg input::placeholder{color:#c0cada;opacity:1}
-#cg input:focus{border-color:#77dce8;box-shadow:0 0 0 3px rgba(102,227,244,.2)}
-#cg form button{border:0;border-radius:999px;padding:0 18px;font-weight:700;cursor:pointer;background:linear-gradient(120deg,#70e9f4,#8c9cff);color:#07141d;font-family:inherit;transition:filter .2s,transform .2s}
-#cg form button:hover{filter:brightness(1.08);transform:translateY(-1px)}
-#cg button:focus-visible,#cg input:focus-visible{outline:3px solid #a8f0f8;outline-offset:2px}
-@media(max-width:560px){#cg{left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:auto;height:min(540px,calc(100svh - 112px));min-height:min(300px,calc(100svh - 112px))}}
-@media(prefers-reduced-motion:reduce){.cm,.cm.t span{animation:none}}`;
-const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+#cg .cg-toolbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:#131d2c;border-bottom:1px solid rgba(204,218,238,.12)}
+#cg .cg-toolbar button{border:0;background:none;color:#ccd5e2;font:inherit;font-size:.76rem;padding:5px 8px;border-radius:7px;cursor:pointer}
+#cg .cg-toolbar button:hover{background:rgba(255,255,255,.08);color:#fff}
+#cg-history{flex:none;max-height:180px;overflow:auto;padding:7px 10px;background:#111a29;border-bottom:1px solid rgba(204,218,238,.17)}
+#cg-history[hidden]{display:none}
+#cg .cg-history-row{display:flex;align-items:center;gap:4px;padding:3px;border-radius:8px}
+#cg .cg-history-row:hover{background:rgba(255,255,255,.06)}
+#cg .cg-history-open{flex:1;min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:none;color:#dce4ef;font:inherit;font-size:.78rem;padding:7px;cursor:pointer}
+#cg .cg-history-row[aria-current="true"] .cg-history-open{color:#f2d89a}
+#cg .cg-history-action{border:1px solid transparent;border-radius:6px;background:transparent;color:#aebbd0;font:inherit;font-size:.7rem;padding:5px;cursor:pointer}
+#cg .cg-history-action:hover{border-color:#617087;color:#fff}
+#cg-log{flex:1;min-height:0;overflow-y:auto;padding:16px;background:#182233;display:flex;flex-direction:column;gap:13px;scrollbar-color:#73829a #182233;scrollbar-width:thin}
+#cg-log::-webkit-scrollbar,#cg-history::-webkit-scrollbar{width:9px}
+#cg-log::-webkit-scrollbar-track,#cg-history::-webkit-scrollbar-track{background:#182233}
+#cg-log::-webkit-scrollbar-thumb,#cg-history::-webkit-scrollbar-thumb{background:#73829a;border:2px solid #182233;border-radius:999px}
+#cg-log::-webkit-scrollbar-thumb:hover,#cg-history::-webkit-scrollbar-thumb:hover{background:#a5b1c2}
+#cg .cm{max-width:96%;padding:11px 13px;border-radius:15px;font-size:.88rem;line-height:1.6;overflow-wrap:anywhere;animation:cmin .2s ease}
+@keyframes cmin{from{opacity:0;transform:translateY(5px)}}
+#cg .cm.u{max-width:88%;align-self:flex-end;background:#29384c;border:1px solid #485b74;color:#f5f7fb;border-bottom-right-radius:5px;white-space:pre-wrap}
+#cg .cm.b{align-self:stretch;color:#edf2f8}
+#cg .cm-content p{margin:0 0 .75em}
+#cg .cm-content p:last-child{margin-bottom:0}
+#cg .cm-content h1,#cg .cm-content h2,#cg .cm-content h3{font-family:'DM Sans',system-ui,sans-serif;line-height:1.3;color:#fff;margin:.85em 0 .45em}
+#cg .cm-content h1{font-size:1.2rem}#cg .cm-content h2{font-size:1.1rem}#cg .cm-content h3{font-size:1rem}
+#cg .cm-content ul,#cg .cm-content ol{padding-left:1.4em;margin:.45em 0}
+#cg .cm-content li{padding-left:.15em;margin:.2em 0}
+#cg .cm-content a{color:#a7eaf1;text-decoration:underline;text-underline-offset:2px}
+#cg .cm-content a:hover{color:#fff}
+#cg .cm-content code{font-family:Consolas,'Courier New',monospace;font-size:.88em;background:#0d1623;color:#f5d994;padding:.13em .35em;border-radius:5px}
+#cg .cm-content pre{overflow:auto;max-width:100%;margin:.65em 0;padding:12px;border:1px solid #42516a;border-radius:10px;background:#0d1623}
+#cg .cm-content pre code{padding:0;background:transparent;color:#e5edf8;white-space:pre}
+#cg .cm-actions{display:flex;gap:6px;margin-top:8px}
+#cg .cm-actions button{border:1px solid rgba(204,218,238,.18);border-radius:7px;background:rgba(255,255,255,.04);color:#bdc9d9;font:inherit;font-size:.7rem;padding:4px 8px;cursor:pointer}
+#cg .cm-actions button:hover{border-color:#a88b4a;color:#fff}
+#cg .cg-welcome{max-width:320px;margin:auto;text-align:center;color:#e7edf5}
+#cg .cg-welcome b{display:block;color:#f2d89a;font-size:1.35rem;margin-bottom:8px}
+#cg .cg-welcome p{font-size:.84rem;color:#c3cede}
+#cg .cg-typing{display:flex;gap:5px;align-items:center;padding:8px 2px;color:#dce4ef;font-size:.75rem}
+#cg .cg-typing i{width:6px;height:6px;border-radius:50%;background:#d6deeb;animation:cg-dot 1s infinite}
+#cg .cg-typing i:nth-child(2){animation-delay:.15s}#cg .cg-typing i:nth-child(3){animation-delay:.3s}
+@keyframes cg-dot{50%{opacity:.3;transform:translateY(-3px)}}
+#cg-suggestions{flex:none;display:flex;gap:7px;flex-wrap:wrap;padding:0 12px 10px;background:#182233}
+#cg-suggestions[hidden]{display:none}
+#cg-suggestions button{font:inherit;font-size:.73rem;color:#e3d3a9;background:rgba(157,123,53,.12);border:1px solid rgba(201,170,104,.4);border-radius:999px;padding:6px 10px;cursor:pointer}
+#cg-suggestions button:hover{background:rgba(157,123,53,.24)}
+#cg form{flex:none;display:flex;align-items:flex-end;gap:8px;padding:10px;background:#111a29;border-top:1px solid rgba(204,218,238,.2)}
+#cg textarea{flex:1;min-width:0;max-height:140px;resize:none;padding:10px 13px;border-radius:15px;background:#202d40;border:1px solid #53627a;color:#f7f9fc;font:inherit;font-size:.85rem;line-height:1.45}
+#cg textarea::placeholder{color:#c0cada;opacity:1}
+#cg textarea:focus{border-color:#c3a45e;box-shadow:0 0 0 3px rgba(195,164,94,.18);outline:0}
+#cg form button{flex:none;min-width:66px;min-height:40px;border:0;border-radius:12px;padding:0 13px;font-weight:700;cursor:pointer;background:linear-gradient(120deg,#e1c47e,#b89145);color:#1b1a16;font-family:inherit;transition:filter .2s,transform .2s}
+#cg form button:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px)}
+#cg form button:disabled{opacity:.52;cursor:not-allowed}
+#cg form button.cg-stop{background:#344258;color:#f4f6fb;border:1px solid #64748b}
+#cg #cg-error{flex:none;margin:0;padding:7px 12px;background:#32212a;color:#ffd9df;font-size:.76rem}
+#cg #cg-error[hidden]{display:none}
+#cg button:focus-visible,#cg textarea:focus-visible{outline:3px solid #f2d89a;outline-offset:2px}
+@media(max-width:560px){#cg{left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:auto;height:min(700px,calc(100svh - 100px));min-height:min(300px,calc(100svh - 100px));border-radius:19px}#cg-log{padding:13px}#cg .cm{max-width:100%}#cg header{padding:10px 11px}#cg .cg-toolbar{padding:5px 9px}}
+@media(prefers-reduced-motion:reduce){#cg,#cg .cm,#cg .cg-typing i{animation:none;transition:none}}`;
+const style=document.createElement('style');
+style.textContent=css;
+document.head.appendChild(style);
 
-const root=document.createElement('div');
-root.innerHTML=`<button id="cg-btn" type="button" aria-label="Open chat assistant" aria-expanded="false" aria-controls="cg"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg></button>
-<section id="cg" role="dialog" aria-label="COMGAB DIGITAL assistant"><header><i></i><div><b>COMGAB Assistant</b><small>Automated helper · usually instant</small></div><button type="button" id="cg-x" aria-label="Close chat">&times;</button></header>
-<div id="cg-log" aria-live="polite"></div>
-<div id="cg-q"></div>
-<form id="cg-f" autocomplete="off"><input id="cg-i" placeholder="Type your message…" aria-label="Your message" maxlength="400"><button type="submit">Send</button></form></section>`;
-document.body.appendChild(root);
+const byId=id=>document.getElementById(id);
+const box=byId('cg');
+const opener=byId('cg-btn');
+const log=byId('cg-log');
+const input=byId('cg-i');
+const sendButton=byId('cg-send');
+const form=byId('cg-f');
+const errorBox=byId('cg-error');
+const historyPanel=byId('cg-history');
+const historyToggle=byId('cg-history-toggle');
+const suggestions=byId('cg-suggestions');
+let controller=null;
+let storedOk=true;
 
-const btn=document.getElementById('cg-btn'),box=document.getElementById('cg'),log=document.getElementById('cg-log'),inp=document.getElementById('cg-i'),q=document.getElementById('cg-q');
-const add=(txt,who)=>{const d=document.createElement('div');d.className='cm '+who;d.textContent=txt;log.appendChild(d);log.scrollTop=log.scrollHeight;return d};
-const say=txt=>{
-  const t=document.createElement('div');t.className='cm b t';t.innerHTML='<span></span><span></span><span></span>';log.appendChild(t);log.scrollTop=log.scrollHeight;
-  setTimeout(()=>{t.remove();add(txt,'b')},500+Math.min(txt.length*12,900));
-};
-const send=txt=>{if(!txt.trim())return;add(txt,'u');q.style.display='none';say(reply(txt))};
-let started=false;
-const toggle=open=>{
-  box.classList.toggle('open',open);btn.setAttribute('aria-expanded',String(open));
-  if(open){
-    if(!started){started=true;say("Hi there! 👋 I'm the COMGAB DIGITAL assistant. What can I help you with today?");
-      ['Your services','Pricing','Start a project','How it works'].forEach(l=>{const b=document.createElement('button');b.type='button';b.textContent=l;b.onclick=()=>send(l==='Start a project'?'I want to start a project':l==='Your services'?'What services do you offer?':l==='Pricing'?'How much does it cost?':'What is your process?');q.appendChild(b)})}
-    setTimeout(()=>inp.focus(),300);
+const promptIdeas=[
+  ['Help me improve my website','I have a website. Suggest a practical plan to improve its clarity, accessibility, and conversions.'],
+  ['Write something','Help me write a polished, friendly email to a new client.'],
+  ['Explain a coding concept','Explain how CSS Grid works, with a small example.']
+];
+
+function escapeHtml(text){
+  return text.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+function inlineMarkdown(text){
+  let html=text
+    .replace(/`([^`\n]+)`/g,'<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/__([^_]+)__/g,'<strong>$1</strong>')
+    .replace(/\*([^*\n]+)\*/g,'<em>$1</em>')
+    .replace(/_([^_\n]+)_/g,'<em>$1</em>');
+  html=html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g,(_match,label,url)=>{
+    const safeUrl=url.replace(/&amp;/g,'&');
+    try{
+      const parsed=new URL(safeUrl);
+      if(!['http:','https:','mailto:'].includes(parsed.protocol))return label;
+    }catch{return label}
+    return `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+  });
+  return html.replace(/  \n/g,'<br>').replace(/\n/g,'<br>');
+}
+function renderMarkdown(markdown){
+  return escapeHtml(markdown).split(/\n{2,}/).map(block=>{
+    const fence=block.match(/^```([a-z0-9_-]*)\n?([\s\S]*?)\n?```$/i);
+    if(fence)return `<pre><code${fence[1]?` class="language-${fence[1]}"`:''}>${fence[2]}</code></pre>`;
+    const heading=block.match(/^(#{1,3})\s+(.+)$/);
+    if(heading)return `<h${heading[1].length}>${inlineMarkdown(heading[2])}</h${heading[1].length}>`;
+    const lines=block.split('\n');
+    const unordered=lines.every(line=>/^\s*[-*+]\s+/.test(line));
+    const ordered=lines.every(line=>/^\s*\d+[.)]\s+/.test(line));
+    if(unordered||ordered){
+      const tag=ordered?'ol':'ul';
+      return `<${tag}>${lines.map(line=>`<li>${inlineMarkdown(line.replace(/^\s*(?:[-*+]|\d+[.)])\s+/,''))}</li>`).join('')}</${tag}>`;
+    }
+    return `<p>${inlineMarkdown(block)}</p>`;
+  }).join('');
+}
+function makeChat(){
+  return {id:crypto.randomUUID(),title:'New chat',updatedAt:Date.now(),messages:[]};
+}
+function loadChats(){
+  try{
+    const parsed=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+    if(!Array.isArray(parsed))return [];
+    return parsed.filter(chat=>chat&&typeof chat.id==='string'&&Array.isArray(chat.messages))
+      .slice(0,MAX_CHATS).map(chat=>({
+        id:chat.id,
+        title:typeof chat.title==='string'?chat.title.slice(0,80):'New chat',
+        updatedAt:Number(chat.updatedAt)||Date.now(),
+        messages:chat.messages.filter(message=>message&&['user','assistant'].includes(message.role)&&typeof message.content==='string')
+          .slice(-MAX_STORED_MESSAGES).map(message=>({role:message.role,content:message.content.slice(0,10000)}))
+      }));
+  }catch{return []}
+}
+let chats=loadChats();
+if(!chats.length)chats=[makeChat()];
+let currentId=chats[0].id;
+function currentChat(){return chats.find(chat=>chat.id===currentId)||chats[0]}
+function persist(){
+  try{
+    chats.sort((a,b)=>b.updatedAt-a.updatedAt);
+    chats=chats.slice(0,MAX_CHATS);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(chats.map(chat=>({...chat,messages:chat.messages.slice(-MAX_STORED_MESSAGES)}))));
+    storedOk=true;
+  }catch{
+    storedOk=false;
+    showError('Chat history could not be saved on this device. Your current conversation may be lost.');
   }
-};
-btn.onclick=()=>toggle(!box.classList.contains('open'));
-document.getElementById('cg-x').onclick=()=>{toggle(false);btn.focus()};
-addEventListener('keydown',e=>{if(e.key==='Escape'&&box.classList.contains('open'))toggle(false)});
-document.getElementById('cg-f').onsubmit=e=>{e.preventDefault();const v=inp.value;inp.value='';send(v)};
+}
+function showError(message,actionLabel,action){
+  errorBox.replaceChildren();
+  errorBox.hidden=!message;
+  if(!message)return;
+  const text=document.createElement('span');
+  text.textContent=message;
+  errorBox.append(text);
+  if(action){
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='cg-retry';
+    button.textContent=actionLabel||'Retry';
+    button.addEventListener('click',action);
+    errorBox.append(' ',button);
+  }
+}
+function scrollToBottom(){log.scrollTop=log.scrollHeight}
+function makeAction(label,handler){
+  const button=document.createElement('button');
+  button.type='button';
+  button.textContent=label;
+  button.addEventListener('click',handler);
+  return button;
+}
+function createMessage(message,index,total){
+  const article=document.createElement('article');
+  article.className=`cm ${message.role==='user'?'u':'b'}`;
+  if(message.role==='user'){
+    article.textContent=message.content;
+    return article;
+  }
+  const content=document.createElement('div');
+  content.className='cm-content';
+  content.innerHTML=renderMarkdown(message.content);
+  article.append(content);
+  if(!controller&&message.content){
+    const actions=document.createElement('div');
+    actions.className='cm-actions';
+    actions.append(makeAction('Copy',async()=>{
+      try{
+        await navigator.clipboard.writeText(message.content);
+        showError('Response copied.');
+        setTimeout(()=>{if(errorBox.textContent==='Response copied.')showError('')},1800);
+      }catch{showError('Could not copy this response. Select the text and copy it manually.')}
+    }));
+    if(index===total-1&&currentChat().messages[index-1]?.role==='user'){
+      actions.append(makeAction('Regenerate',()=>regenerate()));
+    }
+    article.append(actions);
+  }
+  return article;
+}
+function renderHistory(){
+  historyPanel.replaceChildren();
+  for(const chat of [...chats].sort((a,b)=>b.updatedAt-a.updatedAt)){
+    const row=document.createElement('div');
+    row.className='cg-history-row';
+    row.setAttribute('aria-current',String(chat.id===currentId));
+    const open=makeAction(chat.title||'New chat',()=>{
+      currentId=chat.id;
+      historyPanel.hidden=true;
+      historyToggle.setAttribute('aria-expanded','false');
+      showError('');
+      render();
+    });
+    open.className='cg-history-open';
+    open.title=chat.title||'New chat';
+    const rename=makeAction('Rename',()=>{
+      const title=prompt('Rename this conversation',chat.title);
+      if(title===null)return;
+      const trimmed=title.trim();
+      if(!trimmed)return;
+      chat.title=trimmed.slice(0,80);
+      chat.updatedAt=Date.now();
+      persist();
+      render();
+    });
+    rename.className='cg-history-action';
+    const remove=makeAction('Delete',()=>{
+      if(!confirm(`Delete "${chat.title}" from this device?`))return;
+      chats=chats.filter(item=>item.id!==chat.id);
+      if(!chats.length)chats=[makeChat()];
+      if(currentId===chat.id)currentId=chats[0].id;
+      persist();
+      render();
+    });
+    remove.className='cg-history-action';
+    row.append(open,rename,remove);
+    historyPanel.append(row);
+  }
+}
+function render(){
+  const chat=currentChat();
+  log.replaceChildren();
+  if(!chat.messages.length){
+    const welcome=document.createElement('div');
+    welcome.className='cg-welcome';
+    const title=document.createElement('b');
+    title.textContent='What can I help with?';
+    const description=document.createElement('p');
+    description.textContent='Ask a question, explore an idea, write something, or work through a coding problem.';
+    welcome.append(title,description);
+    log.append(welcome);
+    suggestions.replaceChildren();
+    for(const [label,promptText] of promptIdeas){
+      const button=makeAction(label,()=>sendMessage(promptText));
+      suggestions.append(button);
+    }
+    suggestions.hidden=false;
+  }else{
+    chat.messages.forEach((message,index)=>log.append(createMessage(message,index,chat.messages.length)));
+    suggestions.hidden=true;
+  }
+  renderHistory();
+  if(storedOk)byId('cg-status').textContent=controller?'Generating response…':'AI assistant · history saved on this device';
+  if(controller){
+    const typing=document.createElement('div');
+    typing.className='cg-typing';
+    typing.setAttribute('aria-label','Assistant is responding');
+    typing.innerHTML='<i></i><i></i><i></i><span>Thinking</span>';
+    log.append(typing);
+  }
+  sendButton.classList.toggle('cg-stop',Boolean(controller));
+  sendButton.querySelector('span').textContent=controller?'Stop':'Send';
+  sendButton.setAttribute('aria-label',controller?'Stop generating':'Send message');
+  input.disabled=Boolean(controller);
+  byId('cg-clear').disabled=Boolean(controller);
+  scrollToBottom();
+}
+function fitInput(){
+  input.style.height='auto';
+  input.style.height=`${Math.min(input.scrollHeight,140)}px`;
+}
+function getContext(){
+  const context=currentChat().messages.filter(message=>message.role==='user'||message.content).slice(-30);
+  let total=context.reduce((sum,message)=>sum+message.content.length,0);
+  while(total>18_000&&context.length>1)total-=context.shift().content.length;
+  return context.map(message=>({role:message.role,content:message.content}));
+}
+async function requestAssistant(){
+  const chat=currentChat();
+  if(controller||chat.messages.at(-1)?.role!=='user')return;
+  const activeController=new AbortController();
+  controller=activeController;
+  const assistantMessage={role:'assistant',content:''};
+  chat.messages.push(assistantMessage);
+  showError('');
+  persist();
+  render();
+  try{
+    const endpoint=new URL(API_URL,location.href);
+    if(!['http:','https:'].includes(endpoint.protocol)||location.protocol==='https:'&&endpoint.protocol!=='https:'){
+      throw new Error('The chat API URL must use HTTPS on this website.');
+    }
+    const response=await fetch(endpoint.href,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'text/event-stream'},
+      body:JSON.stringify({messages:getContext()}),
+      signal:activeController.signal
+    });
+    if(!response.ok){
+      let message=response.status===404
+        ?'The AI service is not connected yet. Deploy the chat server and configure its API URL to enable responses.'
+        :'The AI service could not complete that request. Please try again.';
+      try{message=(await response.json()).error||message}catch{}
+      throw new Error(message);
+    }
+    if(!response.body)throw new Error('Streaming is unavailable in this browser. Please try again in a current browser.');
+    const reader=response.body.getReader();
+    const decoder=new TextDecoder();
+    let pending='';
+    let finished=false;
+    while(!finished){
+      const {value,done}=await reader.read();
+      pending+=decoder.decode(value||new Uint8Array(),{stream:!done});
+      const lines=pending.split(/\r?\n/);
+      pending=lines.pop()||'';
+      for(const line of lines){
+        if(!line.startsWith('data:'))continue;
+        const data=line.slice(5).trim();
+        if(data==='[DONE]'){finished=true;break}
+        let payload;
+        try{payload=JSON.parse(data)}catch{continue}
+        if(payload.error)throw new Error(payload.error);
+        if(typeof payload.token==='string'){
+          assistantMessage.content+=payload.token;
+          const bubble=log.querySelector('.cm.b:last-of-type .cm-content');
+          if(bubble)bubble.textContent=assistantMessage.content;
+          else render();
+          scrollToBottom();
+        }
+      }
+      if(done)finished=true;
+    }
+    if(!assistantMessage.content)throw new Error('The AI returned an empty response. Please retry.');
+    chat.updatedAt=Date.now();
+    chat.messages=chat.messages.slice(-MAX_STORED_MESSAGES);
+    persist();
+    render();
+  }catch(error){
+    if(error.name!=='AbortError'){
+      chat.messages=chat.messages.filter(message=>message!==assistantMessage);
+      showError(error.message||'The assistant is unavailable. Please try again.', 'Retry',()=>requestAssistant());
+      persist();
+      render();
+    }else{
+      chat.messages=chat.messages.filter(message=>message!==assistantMessage||message.content);
+      if(assistantMessage.content){
+        chat.updatedAt=Date.now();
+        persist();
+      }else{
+        chat.messages=chat.messages.filter(message=>message!==assistantMessage);
+      }
+      render();
+    }
+  }finally{
+    if(controller===activeController)controller=null;
+    render();
+  }
+}
+function sendMessage(text){
+  const content=text.trim();
+  if(!content||controller)return;
+  const chat=currentChat();
+  chat.messages.push({role:'user',content});
+  if(chat.title==='New chat')chat.title=content.replace(/\s+/g,' ').slice(0,42)+(content.length>42?'…':'');
+  chat.updatedAt=Date.now();
+  input.value='';
+  fitInput();
+  showError('');
+  persist();
+  render();
+  requestAssistant();
+}
+function regenerate(){
+  const chat=currentChat();
+  if(controller||chat.messages.at(-1)?.role!=='assistant')return;
+  chat.messages.pop();
+  showError('');
+  persist();
+  requestAssistant();
+}
+function newChat(){
+  if(controller)controller.abort();
+  controller=null;
+  const chat=makeChat();
+  chats.unshift(chat);
+  chats=chats.slice(0,MAX_CHATS);
+  currentId=chat.id;
+  historyPanel.hidden=true;
+  historyToggle.setAttribute('aria-expanded','false');
+  input.value='';
+  fitInput();
+  showError('');
+  persist();
+  render();
+  input.focus();
+}
+function toggle(open){
+  box.classList.toggle('open',open);
+  opener.setAttribute('aria-expanded',String(open));
+  if(open)setTimeout(()=>input.focus(),200);
+}
+
+opener.addEventListener('click',()=>toggle(!box.classList.contains('open')));
+byId('cg-x').addEventListener('click',()=>{toggle(false);opener.focus()});
+byId('cg-new').addEventListener('click',newChat);
+historyToggle.addEventListener('click',()=>{
+  historyPanel.hidden=!historyPanel.hidden;
+  historyToggle.setAttribute('aria-expanded',String(!historyPanel.hidden));
+});
+byId('cg-clear').addEventListener('click',()=>{
+  if(controller)return;
+  if(!confirm('Clear all messages in this conversation? This cannot be undone.'))return;
+  currentChat().messages=[];
+  currentChat().title='New chat';
+  currentChat().updatedAt=Date.now();
+  showError('');
+  persist();
+  render();
+});
+form.addEventListener('submit',event=>{
+  event.preventDefault();
+  if(controller){
+    controller.abort();
+    return;
+  }
+  sendMessage(input.value);
+});
+input.addEventListener('input',fitInput);
+input.addEventListener('keydown',event=>{
+  if(event.key==='Enter'&&!event.shiftKey){
+    event.preventDefault();
+    form.requestSubmit();
+  }
+});
+addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&box.classList.contains('open'))toggle(false);
+});
+addEventListener('storage',event=>{
+  if(event.key!==STORAGE_KEY)return;
+  chats=loadChats();
+  if(!chats.length)chats=[makeChat()];
+  if(!chats.some(chat=>chat.id===currentId))currentId=chats[0].id;
+  render();
+});
+render();
 })();
